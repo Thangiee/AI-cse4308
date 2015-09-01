@@ -2,6 +2,7 @@ package assigments
 
 import scala.annotation.tailrec
 import scala.collection.mutable
+import scala.io.Source
 import scala.math.Ordered.orderingToOrdered
 
 trait Graph[V, W] {
@@ -32,7 +33,7 @@ object ShortestPath {
 
   def uniformCostSearch[V, W](graph: Graph[V, W], start: V, dst: V)(implicit num: Numeric[W]): Option[List[Edge[V, W]]] = {
     @tailrec
-    def go(current: V, visited: List[V], open: mutable.PriorityQueue[Edge[V, W]], path: Map[V, Edge[V, W]]): Option[Map[V, Edge[V, W]]] = {
+    def go(current: V, visited: List[V], open: mutable.PriorityQueue[Edge[V, W]], path: List[Edge[V, W]]): Option[List[Edge[V, W]]] = {
       if (current == dst) return Some(path)
       if (open.isEmpty) return None
 
@@ -44,41 +45,25 @@ object ShortestPath {
           .filter(e => !visited.contains(e.to))
           .map(e => Edge(e.from, e.to, num.plus(e.weight, next.weight)))
 
-        go(next.to, visited :+ next.to, open, path + (next.from -> next))
+        go(next.to, visited :+ next.to, open, path :+ next)
       }
     }
 
-    go(start, List(start), mutable.PriorityQueue[Edge[V, W]]() ++ graph.adjacent(start), Map.empty).map(_.values.toList)
+    go(start, List(start), mutable.PriorityQueue[Edge[V, W]]() ++ graph.adjacent(start), Nil)
   }
 }
 
 object Assigment1 extends App {
-  val es = Set(Edge("a", "b", 3), Edge("b", "c", 4), Edge("c", "a", 5), Edge("d", "c", 10))
-  val en = Set(Edge(1, 2, 3), Edge(2, 3, 4), Edge(3, 1, 5), Edge(4, 3, 10))
-  val m  = Map(
-    "a" -> Set(Edge("a", "b", 3), Edge("a", "c", 1)),
-    "b" -> Set(Edge("b", "a", 3), Edge("b", "c", 2)),
-    "c" -> Set(Edge("c", "a", 1), Edge("c", "b", 2))
-  )
+  def parseEdge(line: String): Edge[String, Int] = {
+    val Array(src, dst, weight)  = line.split(" ")
+    Edge(src, dst, weight.toInt)
+  }
 
-  val example2 = Set(
-    Edge("a", "b", 4),
-    Edge("a", "c", 2),
-    Edge("b", "c", 1),
-    Edge("b", "d", 5),
-    Edge("c", "d", 8),
-    Edge("c", "e", 10),
-    Edge("d", "e", 2),
-    Edge("d", "z", 6),
-    Edge("e", "z", 3)
-  )
-  val g = Graph.fromEdges(es)
-  //  println(g.edgeSize, g.vertexSize)
-  //  println(Edge("a", "b", 5).equalTo(Edge("b", "a", 5)))
-    println(ShortestPath.uniformCostSearch(g, "a", "d"))
+  val edges = Source.fromFile("./input1.txt").getLines()
+    .filter(line => line != "END OF INPUT" && line.nonEmpty)
+    .map(parseEdge)
 
-//  val n = Graph.fromEdges(en)
-//  println(n.path(1, 4))
+  val g = Graph.fromEdges[String, Int](edges.toSet)
 
-
+  println(ShortestPath.uniformCostSearch(g, "Bremen", "Luebeck"))
 }
