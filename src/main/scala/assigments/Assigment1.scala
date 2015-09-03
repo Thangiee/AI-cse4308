@@ -5,60 +5,60 @@ import scala.collection.mutable
 import scala.io.Source
 import scala.math.Ordered.orderingToOrdered
 
-trait Graph[V, W] {
-  protected def adjacencyMap: Map[V, Set[Edge[V, W]]]
+case class Edge[V, C: Numeric](src: V, dst: V, cost: C) extends Ordered[Edge[V, C]] {
+  def reverse: Edge[V, C] = Edge(dst, src, cost)
+  def compare(that: Edge[V, C]): Int = (this.cost compare that.cost) * -1
+}
+
+trait Graph[V, C] {
+  protected def adjacencyMap: Map[V, Set[Edge[V, C]]]
   def vertexes: Set[V] = adjacencyMap.keys.toSet
-  def edges: Set[Edge[V, W]]
-  def adjacent(v: V): Set[Edge[V, W]] = adjacencyMap.getOrElse(v, Set.empty)
+  def edges: Set[Edge[V, C]]
+  def adjacent(v: V): Set[Edge[V, C]] = adjacencyMap.getOrElse(v, Set.empty)
   def degree(v: V): Int = adjacencyMap.get(v).map(_.size).getOrElse(0)
-  def findEdge(src: V, dst: V): Option[Edge[V, W]] = adjacencyMap.get(src).flatMap(_.find(_.to == dst))
+  def findEdge(src: V, dst: V): Option[Edge[V, C]] = adjacencyMap.get(src).flatMap(_.find(_.dst == dst))
 }
 
 object Graph {
-  def fromEdges[V, W](_edges: Set[Edge[V, W]]): Graph[V, W] = new Graph[V, W] {
-    protected def adjacencyMap: Map[V, Set[Edge[V, W]]] = (edges ++ edges.map(_.reverse)).groupBy(_.from)
-    def edges: Set[Edge[V, W]] = _edges
+  def fromEdges[V, C](_edges: Set[Edge[V, C]]): Graph[V, C] = new Graph[V, C] {
+    protected def adjacencyMap: Map[V, Set[Edge[V, C]]] = (edges ++ edges.map(_.reverse)).groupBy(_.src)
+    def edges: Set[Edge[V, C]] = _edges
   }
-}
-
-case class Edge[V, W: Numeric](from: V, to: V, weight: W) extends Ordered[Edge[V, W]] {
-  def reverse: Edge[V, W] = Edge(to, from, weight)
-  def compare(that: Edge[V, W]): Int = (this.weight compare that.weight) * -1
 }
 
 object UniformCostSearch {
 
-  def findShortestPath[V, W: Numeric](graph: Graph[V, W], start: V, dst: V): List[Edge[V, W]] = {
+  def findShortestPath[V, C: Numeric](graph: Graph[V, C], start: V, dst: V): List[Edge[V, C]] = {
     val tree = makeSearchTree(graph, start, dst)
 
     @tailrec
-    def go(node: V, path: List[Edge[V, W]]): List[Edge[V, W]] = {
+    def go(node: V, path: List[Edge[V, C]]): List[Edge[V, C]] = {
       tree.get(node) match {
-        case Some(edge) => go(edge.from, path :+ edge)
+        case Some(edge) => go(edge.src, path :+ edge)
         case None       => path.reverse
       }
     }
     go(dst, Nil)
   }
 
-  private def makeSearchTree[V, W](graph: Graph[V, W], start: V, dst: V)(implicit num: Numeric[W]): Map[V, Edge[V, W]] = {
+  private def makeSearchTree[V, C](graph: Graph[V, C], start: V, dst: V)(implicit num: Numeric[C]): Map[V, Edge[V, C]] = {
     @tailrec
-    def go(current: V, visited: List[V], open: mutable.PriorityQueue[Edge[V, W]], tree: Map[V, Edge[V, W]]): Map[V, Edge[V, W]] = {
+    def go(current: V, visited: Set[V], open: mutable.PriorityQueue[Edge[V, C]], tree: Map[V, Edge[V, C]]): Map[V, Edge[V, C]] = {
       if (current == dst) return tree
       if (open.isEmpty) return Map.empty
 
       val next = open.dequeue()
-      if (visited.contains(next.to)) {
+      if (visited.contains(next.dst)) {
         go(current, visited, open, tree)
       } else {
-        open ++= graph.adjacent(next.to)
-          .filter(e => !visited.contains(e.to))
-          .map(e => Edge(e.from, e.to, num.plus(e.weight, next.weight)))
+        open ++= graph.adjacent(next.dst)
+          .filter(adjEdge => !visited.contains(adjEdge.dst))
+          .map(adjEdge => adjEdge.copy[V, C](cost = num.plus(adjEdge.cost, next.cost)))
 
-        go(next.to, visited :+ next.to, open, tree + (next.to -> graph.findEdge(next.from, next.to).get))
+        go(next.dst, visited + next.dst, open, tree + (next.dst -> graph.findEdge(next.src, next.dst).get))
       }
     }
-    go(start, List(start), mutable.PriorityQueue[Edge[V, W]]() ++ graph.adjacent(start), Map.empty)
+    go(start, Set(start), mutable.PriorityQueue[Edge[V, C]]() ++ graph.adjacent(start), Map.empty)
   }
 }
 
@@ -78,8 +78,8 @@ object Assigment1 extends App {
     case Nil =>
       List("distance: infinity", "route:", "none").foreach(println)
     case path =>
-      println(s"distance: ${path.map(_.weight).sum} km")
+      println(s"distance: ${path.map(_.cost).sum} km")
       println("route:")
-      path.foreach(edge => println(s"${edge.from} to ${edge.to}, ${edge.weight} km"))
+      path.foreach(edge => println(s"${edge.src} to ${edge.dst}, ${edge.cost} km"))
   }
 }
