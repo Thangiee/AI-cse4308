@@ -5,67 +5,124 @@ import scala.collection.mutable
 import scala.io.Source
 import scala.math.Ordered.orderingToOrdered
 
-trait Graph[V, W] {
-  protected def adjacencyMap: Map[V, Set[Edge[V, W]]]
+/**
+ * Representation of an edge connecting two vertexes
+ *
+ * @param src a source vertex
+ * @param dst a destination vertex
+ * @param cost the cost of this edge from src to dst
+ * @tparam V the Vertex type
+ * @tparam C the Cost type that is some Numeric type (Int, Long, Double, etc...)
+ */
+case class Edge[V, C: Numeric](src: V, dst: V, cost: C) extends Ordered[Edge[V, C]] {
+  /** @return a new Edge with the src and dst switched */
+  def reverse: Edge[V, C] = Edge(dst, src, cost)
+
+  override def compare(that: Edge[V, C]): Int = (this.cost compare that.cost) * -1 // order edges by cost from smallest first
+}
+
+/**
+ * Representation of a Weighted Graph
+ *
+ * @tparam V the Vertex type
+ * @tparam C the Cost type that is some Numeric type (Int, Long, Double, etc...)
+ */
+trait Graph[V, C] {
+  protected def adjacencyMap: Map[V, Set[Edge[V, C]]]
+
+  /** @return all vertexes in the graph */
   def vertexes: Set[V] = adjacencyMap.keys.toSet
-  def edges: Set[Edge[V, W]]
-  def adjacent(v: V): Set[Edge[V, W]] = adjacencyMap.getOrElse(v, Set.empty)
-  def degree(v: V): Int = adjacencyMap.get(v).map(_.size).getOrElse(0)
-  def findEdge(src: V, dst: V): Option[Edge[V, W]] = adjacencyMap.get(src).flatMap(_.find(_.to == dst))
+
+  /** @return all edges in the graph */
+  def edges: Set[Edge[V, C]]
+
+  /**
+   * @param v vertex
+   * @return a set of edges connected to the given vertex
+   */
+  def adjacent(v: V): Set[Edge[V, C]] = adjacencyMap.getOrElse(v, Set.empty)
+
+  /**
+   * Search for an edge within the graph that matches the src and dst vertex
+   *
+   * @param src vertex
+   * @param dst vertex
+   * @return [[Some]] found edge or else [[None]]
+   */
+  def findEdge(src: V, dst: V): Option[Edge[V, C]] = adjacencyMap.get(src).flatMap(_.find(_.dst == dst))
 }
 
 object Graph {
-  def fromEdges[V, W](_edges: Set[Edge[V, W]]): Graph[V, W] = new Graph[V, W] {
-    protected def adjacencyMap: Map[V, Set[Edge[V, W]]] = (edges ++ edges.map(_.reverse)).groupBy(_.from)
-    def edges: Set[Edge[V, W]] = _edges
-  }
-}
 
-case class Edge[V, W: Numeric](from: V, to: V, weight: W) extends Ordered[Edge[V, W]] {
-  def reverse: Edge[V, W] = Edge(to, from, weight)
-  def compare(that: Edge[V, W]): Int = (this.weight compare that.weight) * -1
+  /**
+   * Create an undirected graph with a given set of edges.
+   * That is, if given Edge("a", "b", 5), an Edge("b", "a", 5) will also be created.
+   *
+   * @param _edges set of edges
+   * @return an undirected graph
+   */
+  def fromEdges[V, C](_edges: Set[Edge[V, C]]): Graph[V, C] = new Graph[V, C] {
+    protected def adjacencyMap: Map[V, Set[Edge[V, C]]] = (edges ++ edges.map(_.reverse)).groupBy(_.src)
+    def edges: Set[Edge[V, C]] = _edges
+  }
 }
 
 object UniformCostSearch {
 
-  def findShortestPath[V, W: Numeric](graph: Graph[V, W], start: V, dst: V): List[Edge[V, W]] = {
-    val tree = makeSearchTree(graph, start, dst)
+  /**
+   * Find the shortest path between src and dst in a given graph using uniform cost search algo
+   *
+   * @param graph the graph to perform the search algo
+   * @param src the starting vertex
+   * @param dst the ending vertex
+   * @tparam V the Vertex type
+   * @tparam C the Cost type that is some Numeric type (Int, Long, Double, etc...)
+   * @return a list of edges with the closest edge to the src at the head of the list.
+   *         If no path is found, the list will be empty.
+   */
+  def findShortestPath[V, C: Numeric](graph: Graph[V, C], src: V, dst: V): List[Edge[V, C]] = {
+    val tree = makeSearchTree(graph, src, dst)
 
     @tailrec
-    def go(node: V, path: List[Edge[V, W]]): List[Edge[V, W]] = {
+    // starting at the dst(leaf), traverse up the tree to the src(root) while keep track of the path taken
+    def go(node: V, path: List[Edge[V, C]]): List[Edge[V, C]] = {
       tree.get(node) match {
-        case Some(edge) => go(edge.from, path :+ edge)
-        case None       => path.reverse
+        case Some(edge) => go(edge.src, path :+ edge)
+        case None       => path.reverse  // reverse the path at the end so the closest edge to the src at the head of the list
       }
     }
     go(dst, Nil)
   }
 
-  private def makeSearchTree[V, W](graph: Graph[V, W], start: V, dst: V)(implicit num: Numeric[W]): Map[V, Edge[V, W]] = {
+  // create a search tree with the vertex as the key and the value is the edge that led to that vertex
+  private def makeSearchTree[V, C](graph: Graph[V, C], start: V, dst: V)(implicit num: Numeric[C]): Map[V, Edge[V, C]] = {
     @tailrec
-    def go(current: V, visited: List[V], open: mutable.PriorityQueue[Edge[V, W]], tree: Map[V, Edge[V, W]]): Map[V, Edge[V, W]] = {
+    def go(current: V, visited: Set[V], open: mutable.PriorityQueue[Edge[V, C]], tree: Map[V, Edge[V, C]]): Map[V, Edge[V, C]] = {
       if (current == dst) return tree
       if (open.isEmpty) return Map.empty
 
       val next = open.dequeue()
-      if (visited.contains(next.to)) {
+      if (visited.contains(next.dst) && visited.contains(next.src)) {
+        // skip edges with src and dst already been visited
         go(current, visited, open, tree)
       } else {
-        open ++= graph.adjacent(next.to)
-          .filter(e => !visited.contains(e.to))
-          .map(e => Edge(e.from, e.to, num.plus(e.weight, next.weight)))
+        // add adjacent edges to the minimum priority queue
+        open ++= graph.adjacent(next.dst)
+          .filter(adjEdge => !visited.contains(adjEdge.dst)) // remove edges whose dst vertex has already been visited
+          .map(adjEdge => adjEdge.copy[V, C](cost = num.plus(adjEdge.cost, next.cost))) // accumulate the cost
 
-        go(next.to, visited :+ next.to, open, tree + (next.to -> graph.findEdge(next.from, next.to).get))
+        go(next.dst, visited + next.dst, open, tree + (next.dst -> graph.findEdge(next.src, next.dst).get))
       }
     }
-    go(start, List(start), mutable.PriorityQueue[Edge[V, W]]() ++ graph.adjacent(start), Map.empty)
+    go(start, Set(start), mutable.PriorityQueue[Edge[V, C]]() ++ graph.adjacent(start), Map.empty)
   }
 }
 
-object Assigment1 extends App {
+object Assigment1 extends App { // program entry point
+
   def parseEdge(line: String): Edge[String, Int] = {
-    val Array(src, dst, weight)  = line.split(" ")
-    Edge(src, dst, weight.toInt)
+    val Array(src, dst, cost) = line.split(" ")
+    Edge(src, dst, cost.toInt)
   }
 
   val edges = Source.fromFile(args(0)).getLines()
@@ -75,11 +132,11 @@ object Assigment1 extends App {
   val graph = Graph.fromEdges[String, Int](edges.toSet)
 
   UniformCostSearch.findShortestPath(graph, args(1), args(2)) match {
-    case Nil =>
+    case Nil  => // no path found
       List("distance: infinity", "route:", "none").foreach(println)
-    case path =>
-      println(s"distance: ${path.map(_.weight).sum} km")
+    case path => // found the shortest path
+      println(s"distance: ${path.map(_.cost).sum} km")
       println("route:")
-      path.foreach(edge => println(s"${edge.from} to ${edge.to}, ${edge.weight} km"))
+      path.foreach(edge => println(s"${edge.src} to ${edge.dst}, ${edge.cost} km"))
   }
 }
