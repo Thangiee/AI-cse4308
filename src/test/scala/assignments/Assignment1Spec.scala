@@ -42,7 +42,7 @@ class Assignment1Spec extends BaseSpec {
     path.map(_.cost).sum shouldEqual 455
   }
 
-  "No path" should "exists between Bremen and Frankfurt" in {
+  "No path" should "exists between London and Frankfurt" in {
     val g = Graph.fromEdges(edges)
     val path = UniformCostSearch.findShortestPath(g, "London", "Frankfurt")
 
