@@ -1,4 +1,4 @@
-package assigments
+package assignments
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -14,11 +14,12 @@ import scala.math.Ordered.orderingToOrdered
  * @tparam V the Vertex type
  * @tparam C the Cost type that is some Numeric type (Int, Long, Double, etc...)
  */
-case class Edge[V, C: Numeric](src: V, dst: V, cost: C) extends Ordered[Edge[V, C]] {
+case class Edge[V, C: Numeric](src: V, dst: V)(val cost: C) extends Ordered[Edge[V, C]] {
   /** @return a new Edge with the src and dst switched */
-  def reverse: Edge[V, C] = Edge(dst, src, cost)
+  def reverse: Edge[V, C] = Edge(dst, src)(cost)
 
   override def compare(that: Edge[V, C]): Int = (this.cost compare that.cost) * -1 // order edges by cost from smallest first
+  override def toString: String = s"Edge(src=$src, dst=$dst)(cost=$cost)"
 }
 
 /**
@@ -34,7 +35,7 @@ trait Graph[V, C] {
   def vertexes: Set[V] = adjacencyMap.keys.toSet
 
   /** @return all edges in the graph */
-  def edges: Set[Edge[V, C]]
+  def edges: Set[Edge[V, C]] = adjacencyMap.values.fold(Set.empty)(_ ++ _)
 
   /**
    * @param v vertex
@@ -62,8 +63,7 @@ object Graph {
    * @return an undirected graph
    */
   def fromEdges[V, C](_edges: Set[Edge[V, C]]): Graph[V, C] = new Graph[V, C] {
-    protected def adjacencyMap: Map[V, Set[Edge[V, C]]] = (edges ++ edges.map(_.reverse)).groupBy(_.src)
-    def edges: Set[Edge[V, C]] = _edges
+    protected def adjacencyMap: Map[V, Set[Edge[V, C]]] = (_edges ++ _edges.map(_.reverse)).groupBy(_.src)
   }
 }
 
@@ -109,7 +109,7 @@ object UniformCostSearch {
         // add adjacent edges to the minimum priority queue
         open ++= graph.adjacent(next.dst)
           .filter(adjEdge => !visited.contains(adjEdge.dst)) // remove edges whose dst vertex has already been visited
-          .map(adjEdge => adjEdge.copy[V, C](cost = num.plus(adjEdge.cost, next.cost))) // accumulate the cost
+          .map(adjEdge => adjEdge.copy[V, C]()(cost = num.plus(adjEdge.cost, next.cost))) // accumulate the cost
 
         go(next.dst, visited + next.dst, open, tree + (next.dst -> graph.findEdge(next.src, next.dst).get))
       }
@@ -118,11 +118,11 @@ object UniformCostSearch {
   }
 }
 
-object Assigment1 extends App { // program entry point
+object Assignment1 extends App { // program entry point
 
   def parseEdge(line: String): Edge[String, Int] = {
     val Array(src, dst, cost) = line.split(" ")
-    Edge(src, dst, cost.toInt)
+    Edge(src, dst)(cost.toInt)
   }
 
   val edges = Source.fromFile(args(0)).getLines()
