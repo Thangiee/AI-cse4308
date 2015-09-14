@@ -82,7 +82,7 @@ public class maxconnect4 {
         if (currentGame.getPieceCount() < 42) {
             int current_player = currentGame.getCurrentTurn();
             // AI play - random play
-            playColumn = calculon.findBestPlay(currentGame);
+            playColumn = calculon.findBestPlay(currentGame, depthLevel);
 
             // play the piece
             currentGame.playPiece(playColumn);

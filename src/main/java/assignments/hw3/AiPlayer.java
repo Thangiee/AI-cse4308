@@ -1,5 +1,7 @@
 package assignments.hw3;
 
+import scala.Int;
+
 import java.util.Random;
 
 /**
@@ -27,18 +29,7 @@ public class AiPlayer {
      * @return an integer indicating which column the AiPlayer would like
      * to play in.
      */
-    public int findBestPlay(GameBoard currentGame) {
-        // start random play code
-        Random randy = new Random();
-        int playChoice = 99;
-
-        playChoice = randy.nextInt(7);
-
-        while (!currentGame.isValidPlay(playChoice))
-            playChoice = randy.nextInt(7);
-
-        // end random play code
-
-        return playChoice;
+    public int findBestPlay(GameBoard currentGame, int depthLevel) {
+        return Ai.findBestPlay(currentGame, depthLevel);
     }
 }
