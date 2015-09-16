@@ -1,5 +1,6 @@
-package assignments
+package assignments.hw1
 
+import assignments.BaseSpec
 import org.scalacheck.Gen
 
 class ShortestPathSpec extends BaseSpec {

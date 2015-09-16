@@ -1,4 +1,4 @@
-package assignments
+package assignments.hw1
 
 import scala.annotation.tailrec
 import scala.collection.mutable

@@ -1,4 +1,6 @@
-package assignments
+package assignments.hw1
+
+import assignments.BaseSpec
 
 class Assignment1Spec extends BaseSpec {
 
