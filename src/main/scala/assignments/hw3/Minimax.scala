@@ -9,16 +9,16 @@ object Minimax {
 
     def loop(gameTree: Tree[Int], depth: Int, maxing: Boolean): BestVal = {
       gameTree match {
-        case Leaf(board)           => board
-        case Node(board, subGames) =>
-          if (depth == 0) return board
+        case Leaf(value)           => value
+        case Node(value, subTrees) =>
+          if (depth == 0) return value
 
           if (maxing) {
-            subGames.map(game => loop(game, depth - 1, maxing = false)).max
+            subTrees.map(game => loop(game, depth - 1, maxing = false)).max
           } else {
-            subGames.map(game => loop(game, depth - 1, maxing = true)).min
+            subTrees.map(game => loop(game, depth - 1, maxing = true)).min
           }
-        case Empty => if (maxing) Int.MinValue else Int.MaxValue
+        case Empty => if (maxing) Int.MaxValue else Int.MinValue
       }
     }
 
@@ -30,7 +30,7 @@ object Minimax {
     def loop(gameTree: Tree[Int], depth: Int, alpha: Int, beta: Int, maxing: Boolean): BestVal = {
       gameTree match {
         case Node(value, subTrees) =>
-          if (depth == 0) return value
+          if (depth <= 0) return value
 
           if (maxing) {
             var a = alpha
@@ -57,7 +57,7 @@ object Minimax {
     var alpha = Int.MinValue
 
     for(child <- gameTree.subTrees) {
-      val a = loop(child, depth-1, alpha, Int.MaxValue, maxing = false)
+      val a = loop(child, depth, alpha, Int.MaxValue, maxing = false)
       if (alpha < a) {
         alpha = a
       }

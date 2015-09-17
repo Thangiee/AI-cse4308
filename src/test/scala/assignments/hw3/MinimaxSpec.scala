@@ -1,6 +1,7 @@
 package assignments.hw3
 
 import assignments.BaseSpec
+import org.scalacheck.Gen
 
 class MinimaxSpec extends BaseSpec {
 
@@ -27,6 +28,25 @@ class MinimaxSpec extends BaseSpec {
 
     bestVal shouldEqual 6
     bestMove shouldEqual 1
+  }
+
+  "AlphaBeta and minimax" must "yield the same result regardless of alphaBeta pruning" in {
+
+    val genTree =
+      for {
+        listSize <- Gen.choose(1, 41)
+        moves <- Gen.listOfN(listSize, Gen.choose(0, 6))
+      } yield {
+        val gb = new GameBoard(Array.fill(6, 7)(0))
+        moves.foreach(move => gb.playPiece(move))
+        Ai.genGameTree(gb, gb.getCurrentTurn)
+      }
+
+    val searchDepth = Gen.choose(0, 4)
+
+    forAll(genTree, searchDepth) { case (n: Node[Int], dept) =>
+      Minimax.alphaBeta(n.copy(), dept) shouldEqual Minimax.miniMax(n.copy(), dept)
+    }
   }
 
 }
