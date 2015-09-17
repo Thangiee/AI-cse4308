@@ -27,42 +27,43 @@ object Minimax {
 
   def alphaBeta(gameTree: Node[Int], depth: Int): (BestVal, BestMove) = {
 
-    def loop(gameTree: Tree[Int], depth: Int, alpha: Int, beta: Int, index: Int, maxing: Boolean): (BestVal, BestMove) = {
+    def loop(gameTree: Tree[Int], depth: Int, alpha: Int, beta: Int, maxing: Boolean): BestVal = {
       gameTree match {
         case Node(value, subTrees) =>
-          if (depth <= 0) return (value, index)
+          if (depth == 0) return value
 
           if (maxing) {
-            var bestAlpha = alpha
-            var bestMove = index
-            for ((child, i) <- subTrees.zipWithIndex) {
-              val (alphaBeta, _) = loop(child, depth-1, bestAlpha, beta, i, maxing = false)
-              if (alphaBeta > bestAlpha) {
-                bestAlpha = alphaBeta
-                bestMove = i
-              }
-              if (beta <= bestAlpha) return (bestAlpha, bestMove)
+            var a = alpha
+            for (child <- subTrees) {
+              a = a max loop(child, depth-1, a, beta, maxing = false)
+              if (beta <= a) return a
             }
-            (bestAlpha, bestMove)
+            a
           }
           else {
-            var bestBeta = beta
-            var bestMove = index
-            for ((child, i) <- subTrees.zipWithIndex) {
-              val (alphaBeta, _) = loop(child, depth-1, alpha, bestBeta, i, maxing = true)
-              if (alphaBeta < bestBeta) {
-                bestBeta = alphaBeta
-                bestMove = i
-              }
-              if (bestBeta <= alpha) return (bestBeta, bestMove)
+            var b = beta
+            for (child <- subTrees) {
+              b = b min loop(child, depth-1, alpha, b, maxing = true)
+              if (b <= alpha) return b
             }
-            (bestBeta, bestMove)
+            b
           }
-        case Leaf(board) => (board, index)
-        case Empty => (if (maxing) Int.MinValue else Int.MaxValue, index)
+        case Leaf(board) => board
+        case Empty => if (maxing) Int.MaxValue else Int.MinValue
       }
     }
 
-    loop(gameTree, depth, Int.MinValue, Int.MaxValue,0, maxing = true)
+    var alphas: List[Int] = Nil
+    var alpha = Int.MinValue
+
+    for(child <- gameTree.subTrees) {
+      val a = loop(child, depth-1, alpha, Int.MaxValue, maxing = false)
+      if (alpha < a) {
+        alpha = a
+      }
+      alphas = alphas :+ a
+    }
+
+    alphas.zipWithIndex.maxBy { case (bestVal, bestMove) => bestVal }
   }
 }

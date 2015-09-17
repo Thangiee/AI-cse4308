@@ -3,6 +3,7 @@ package assignments.hw3
 object Ai {
 
   def findBestPlay(gameBoard: GameBoard, depthLevel: Int): Int = {
+    println(s"best play for ${gameBoard.getCurrentTurn}")
     genGameTree(gameBoard) match {
       case n: Node[Int] =>
         val (_, bestMove) = Minimax.alphaBeta(n, depthLevel)
