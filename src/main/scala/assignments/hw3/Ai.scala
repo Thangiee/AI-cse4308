@@ -2,6 +2,13 @@ package assignments.hw3
 
 object Ai {
 
+  /**
+   * Find the best move for the game board with a given max depth
+   *
+   * @param gameBoard the game board of the current game
+   * @param depthLevel max search depth
+   * @return the best move
+   */
   def findBestPlay(gameBoard: GameBoard, depthLevel: Int): Int = {
     
     genGameTree(gameBoard, gameBoard.getCurrentTurn) match {
@@ -15,6 +22,13 @@ object Ai {
     }
   }
 
+  /**
+   * Create a search tree from a game board
+   *
+   * @param gameBoard
+   * @param computerSymbol
+   * @return
+   */
   def genGameTree(gameBoard: GameBoard, computerSymbol: Int): Tree[Int] = {
     if (gameBoard.getPieceCount == 42) return Leaf(eval(gameBoard, computerSymbol))
 

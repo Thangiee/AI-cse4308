@@ -2,9 +2,18 @@ package assignments.hw3
 
 object Minimax {
 
+  // type alias
   type BestMove = Int
   type BestVal  = Int
 
+  /**
+   * Minimax algorithm with depth limited search
+   *
+   * @param gameTree search tree
+   * @param depth max search depth
+   * @return a tuple whose first value is the best heuristic value and
+   *         the second value is the index that led to the best value for the gameTree
+   */
   def miniMax(gameTree: Node[Int], depth: Int): (BestVal, BestMove) = {
 
     def loop(gameTree: Tree[Int], depth: Int, maxing: Boolean): BestVal = {
@@ -25,6 +34,14 @@ object Minimax {
     gameTree.subTrees.map(game => loop(game, depth, maxing = false)).take(7).zipWithIndex.maxBy(_._1)
   }
 
+  /**
+   *  Minimax algorithm with depth limited search and alpha-beta pruning
+   *
+   * @param gameTree search tree
+   * @param depth max search depth
+   * @return a tuple whose first value is the best heuristic value and
+   *         the second value is the index that led to the best value for the gameTree
+   */
   def alphaBeta(gameTree: Node[Int], depth: Int): (BestVal, BestMove) = {
 
     def loop(gameTree: Tree[Int], depth: Int, alpha: Int, beta: Int, maxing: Boolean): BestVal = {

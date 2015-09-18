@@ -1,5 +1,11 @@
 package assignments.hw3
 
+/**
+ * A lazy(non-strict) n-airy tree algebraic data type.
+ *
+ * The children of a node/branch are computed on-demand which means
+ * this tree can support infinite depth and width.
+ */
 sealed trait Tree[+A] {
   type Fringe[B] = Stream[Tree[B]]
   type Items[B] = Stream[Tree[B]]
