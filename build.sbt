@@ -6,7 +6,9 @@ scalaVersion := "2.11.7"
 
 scalacOptions += "-Xexperimental"
 
-assemblyOutputPath in assembly := new File("./find_route.jar")
+mainClass in assembly := Some("assignments.hw3.maxconnect4")
+
+assemblyOutputPath in assembly := new File("./maxconnect4.jar")
 
 libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test",
