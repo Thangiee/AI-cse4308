@@ -1,9 +1,6 @@
 package assignments.hw3;
 
-import scala.Array;
-
 import java.io.*;
-import java.util.Objects;
 import java.util.Scanner;
 
 /**
