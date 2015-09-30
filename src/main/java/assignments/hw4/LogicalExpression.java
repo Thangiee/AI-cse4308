@@ -160,7 +160,7 @@ public class LogicalExpression {
 			return this.subexpressions.lastElement();
 		}
 		
-		public Vector getSubexpressions() {
+		public Vector<LogicalExpression> getSubexpressions() {
 			return this.subexpressions;
 		}
 
