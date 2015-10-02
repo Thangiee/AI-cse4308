@@ -6,9 +6,9 @@ scalaVersion := "2.11.7"
 
 scalacOptions += "-Xexperimental"
 
-mainClass in assembly := Some("assignments.hw3.maxconnect4")
+mainClass in assembly := Some("assignments.hw4.CheckTrueFalse")
 
-assemblyOutputPath in assembly := new File("./maxconnect4.jar")
+assemblyOutputPath in assembly := new File("./check_true_false.jar")
 
 libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test",

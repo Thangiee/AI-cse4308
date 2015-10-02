@@ -1,16 +1,20 @@
 package assignments.hw4
 
+import java.io.PrintWriter
+
 object InferenceEngine {
 
   def checkTrueFalse(kb: LogicalExpression, alpha: LogicalExpression): Unit = {
     val (_kb, _alpha) = (kb.toADT, alpha.toADT)
 
-    (ttEntails(_kb, _alpha), ttEntails(_kb, Not(_alpha))) match {
-      case (true, false)  => println("definitely true")
-      case (false, true)  => println("definitely false")
-      case (false, false) => println("possibly true, possibly false")
-      case (true, true)   => println("both true and false")
+    val res = (ttEntails(_kb, _alpha), ttEntails(_kb, Not(_alpha))) match {
+      case (true, false)  => "definitely true"
+      case (false, true)  => "definitely false"
+      case (false, false) => "possibly true, possibly false"
+      case (true, true)   => "both true and false"
     }
+
+    new PrintWriter("result.txt") { write(res); close() }
   }
 
   def ttEntails(kb: LogicalExpressionADT, alpha: LogicalExpressionADT): Boolean = {
