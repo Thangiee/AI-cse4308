@@ -1,0 +1,376 @@
+<html>
+<head>
+    <title>CSE 4308 - Assignment 9 - Programming Part</title>
+</head>
+
+<body>
+<h1><a href="../../index.html">CSE 4308</a> -
+    <a href="../index.html">Assignments</a> -
+    Assignment 9 - Programming Part</h1>
+
+
+<h3><a href="..">List of assignment due dates.</a></h3>
+
+<hr>
+
+<h3> Summary </h3>
+
+In this assignment you will implement decision trees and decision forests. Your program will learn decision trees from
+training data and will apply decision trees and decision forests to classify test objects.
+
+<p>
+
+<hr>
+
+<h3> Command-line Arguments </h3>
+
+You must a program that learns a decision tree for a binary classification problem, given some training data. In
+particular, your program will run as follows:
+<pre>
+dtree training_file test_file option
+</pre>
+
+The arguments provide to the program the following information:
+
+<ul>
+
+    <LI> The first argument is the name of the training file, where the training data is stored.
+
+    <LI> The second argument is the name of the test file, where the test data is stored.
+
+    <LI> The third argument can have four possible values: <tt>optimized</tt>, <tt>randomized</tt>, <tt>forest3</tt>, or
+        <tt>forest15</tt>. It specifies how to train (learn) the decision tree, and will be discussed later.
+
+</uL>
+
+Both the training file and the test file are text files, containing data in tabular format. Each value is a number, and
+values are separated by white space. The i-th row and j-th column contain the value for the j-th feature of the i-th
+object. The only exception is the LAST column, that stores the class label for each object. <strong>Make sure you do not
+    use data from the last column (i.e., the class labels) as attributes (features) in your decision tree.</strong>
+
+<p>
+
+    Example files that can be passed as command-line arguments are in the <a href="datasets">datasets</a> directory.
+    That directory contains three datasets, copied from the <a href="http://archive.ics.uci.edu/ml/datasets.html">UCI
+    repository of machine learning datasets</a>:
+
+    <ul>
+
+        <li> The <tt>pendigits</tt> dataset, containing data for pen-based recognition of handwritten digits.
+
+            <ul>
+
+                <li> 7494 training objects.
+
+                <li> 3498 test objets.
+
+                <li> 16 attributes.
+
+                <li> 10 classes.
+
+            </ul>
+
+<p>
+
+    <li> The <tt>satelite</tt> dataset. The full name of this dataset is Statlog (Landsat Satellite) Data Set, and it
+        contains data for classification of pixels in satellite images.
+
+        <ul>
+
+            <li> 4435 training objects.
+
+            <li> 2000 test objets.
+
+            <li> 36 attributes.
+
+            <li> 6 classes.
+
+        </ul>
+
+<p>
+
+    <li> The <tt>yeast</tt> dataset, containing some biological data whose purpose I do not understand myself.
+
+        <ul>
+
+            <li> 1000 training objects.
+
+            <li> 484 test objets.
+
+            <li> 8 attributes.
+
+            <li> 10 classes.
+
+        </ul>
+
+        </ul>
+
+        For each dataset, a training file and a test file are provided. The name of each file indicates what dataset the
+        file belongs to, and whether the file contains training or test data.
+
+<p>
+
+    Note that, for the purposes of your assignment, it does not matter at all where the data came from. One of the
+    attractive properties of decision trees (and many other machine learning methods) is that they can be applied in the
+    exact same way to many different types of data, and produce useful results.
+
+
+<p>
+
+<hr>
+
+<h3> Training Phase </h3>
+
+
+The first thing that your program should do is a decision tree using the training data.
+
+What you train and how you do the training depends on the came of the third command line argument, that we called
+"option". This option can take four possible values, as follows:
+
+<ul>
+
+    <li><tt>optimized</tt>: in this case, at each non-leaf node of the tree (starting at the root) you should identify
+        the optimal combination of attribute (feature) and threshold, i.e., the combination that leads to the highest
+        information gain for that node.
+
+    <li><tt>randomized</tt>: in this case, at each non-leaf node of the tree (starting at the root) you should choose
+        the attribute (feature) randomly. The threshold should still be optimized, i.e., it should be chosen so as to
+        maximize the information gain for that node and for that randomly chosen attribute.
+
+    <li><tt>forest3</tt>: in this case, your program trains a random forest containing three trees. Each of those trees
+        should be trained as discussed under the "randomized" option.
+
+    <li><tt>forest15</tt>: in this case, your program trains a random forest containing 15 trees. Each of those trees
+        should be trained as discussed under the "randomized" option.
+
+</ul>
+
+All four options are described in more details in the lecture slides titled <a
+        href="../../lectures/08b_decision_trees.pdf">Practical Issues with Decision Trees</a>. Your program should
+follow the guidelines stated in those slides.
+
+
+<p>
+
+<hr>
+
+<h3> Training Phase Output </h3>
+
+After you learn your tree or forest, you should print it. Every node must be printed, in breath-first order, with left
+children before right children. For each node you should print a line containing the following info:
+
+<ul>
+
+    <li> tree ID. If you are learning a single tree, the ID is 0. If you are learning multiple trees, their ID range
+        from 0 to the number of trees - 1, and should be printed in increasing order of their ID.
+
+    <li> node ID. The root has ID 1. If a node has ID = N, then its left child has ID 2*N and its right child has ID 2*N
+        + 1.
+
+    <li> a feature ID, specifying which attribute is used for the test at that node. This is a number starting from 0,
+        indicating the position of the column that contains values for that attribute. If the node is a leaf node, print
+        -1 for the feature ID.
+
+    <li> a threshold that, combined with the feature ID specifies the test for that node. If feature ID = X and
+        threshold = T, then objects whose X-th feature has a value LESS THAN T are directed to the left child of that
+        node. If the node is a leaf node, print -1 for the threshold.
+
+    <li> information gain achieved by the test chosen for this node.
+
+</ul>
+
+To produce this output in a uniform manner, use these printing statements:
+<ul>
+
+    <li> For C or C++, use:
+
+<pre>
+printf("tree=%2d, node=%3d, feature=%2d, thr=%6.2lf, gain=%lf\n", tree_id, node_id, feature_id, threshold, gain);
+</pre>
+
+        <p>
+
+    <li> For Java, use:
+
+<pre>
+System.out.printf("tree=%2d, node=%3d, feature=%2d, thr=%6.2f, gain=%f\n", tree_id, node_id, feature_id, threshold, gain);
+</pre>
+
+        <p>
+
+    <li> For Python or any other language, just make sure that you use formatting specifies that produce aligned output
+        that matches the specs given for C and Java.
+
+</ul>
+
+<p>
+
+<hr>
+
+<h3> Classification </h3>
+
+For each test object (each line in the test file) print out, in a separate line, the classification label (class1 or
+class2). If your classification result is a tie among two or more classes, choose one of them randomly. For each test
+object you should print a line containing the following info:
+
+<ul>
+
+    <li> object ID. This is the line number where that object occurs in the test file. Start with 0 in numbering the
+        objects, not with 1.
+
+    <li> predicted class (the result of the classification).
+
+    <li> true class (from the last column of the test file).
+
+    <li> accuracy. This is defined as follows:
+
+        <ul>
+
+            <li> If there were no ties in your classification result, and the predicted class is correct, the accuracy
+                is 1.
+
+            <li> If there were no ties in your classification result, and the predicted class is incorrect, the accuracy
+                is 0.
+
+            <li> If there were ties in your classification result, and the correct class was one of the classes that
+                tied for best, the accuracy is 1 divided by the number of classes that tied for best.
+
+            <li> If there were ties in your classification result, and the correct class was NOT one of the classes that
+                tied for best, the accuracy is 0.
+
+        </ul>
+
+</ul>
+
+To produce this output in a uniform manner, use these printing statements:
+<ul>
+
+    <li> For C or C++, use:
+
+<pre>
+printf("ID=%5d, predicted=%3d, true=%3d, accuracy=%4.2lf\n", object_id, predicted_class, true_class, accuracy);
+</pre>
+
+        <p>
+
+    <li> For Java, use:
+
+<pre>
+System.out.printf("ID=%5d, predicted=%3d, true=%3d, accuracy=%4.2f\n", object_id, predicted_class, true_class, accuracy);
+
+</pre>
+
+        <p>
+
+    <li> For Python or any other language, just make sure that you use formatting specifies that produce aligned output
+        that matches the specs given for C and Java.
+
+</ul>
+
+After you have printed the results for all test objects, you should print the overall classification accuracy, which is
+defined as the average of the classification accuracies you printed out for each test object. To print the
+classification accuracy in a uniform manner, use these printing statements:
+<ul>
+
+    <li> For C or C++, use:
+
+<pre>
+printf("classification accuracy=%6.4lf\n", classification_accuracy);
+</pre>
+
+        <p>
+
+    <li> For Java, use:
+
+<pre>
+System.out.printf("classification accuracy=%6.4f\n", classification_accuracy);
+
+    <li> For Python or any other language, just make sure that you use formatting specifies that produce aligned output
+        that matches the specs given for C and Java.
+
+        </pre>
+
+</ul>
+
+<p>
+
+<hr>
+
+
+<h3> Grading </h3>
+
+<UL>
+
+    <LI> 20 points: Correct processing of the <tt>optimized</tt> option. Identifying and choosing, for each node, the
+        (feature, threshold) pair with the highest information gain for that node, and correctly computing that
+        information gain.
+
+    <LI> 10 points: Correct processing of the <tt>randomized</tt> option. In other words, identifying and choosing, for
+        each node, an appropriate (feature, threshold) pair, where the feature is chosen randomly, and the threshold
+        maximizes the information gain for that feature,
+
+    <LI> 10 points: Correctly directing training objects to the left or right child of each node, depending on the
+        (threshold, value) pair used at that node.
+
+    <LI> 10 points: Correct application of pruning, as specified in the slides (if any .
+
+    <LI> 15 points: Correctly applying decision trees to classify test objects.
+
+    <LI> 15 points: Correctly applying decision forests to classify test objects.
+
+    <li> 20 points: Following the specifications in producing the required output.
+
+</UL>
+
+
+<p>
+
+<hr>
+
+<h3>How to submit</h3>
+
+Submissions should be made using <a href="http://elearn.uta.edu">Blackboard</a>.
+Implementations in Python, C, C++, and Java will be accepted. If you would like
+to use another language, please first check with the instructor via
+e-mail. Points will be taken off for failure to comply with this
+requirement.
+
+<p>
+
+    Submit a ZIPPED directory called <tt>assignment9.zip</tt> (no other
+    forms of compression accepted, contact the instructor or TA if you do
+    not know how to produce .zip files). The directory should
+    contain:
+
+<ul>
+
+    <li> A file called answers.xxx, including your answers to the <a href="../assignment9b">written part</a> of the
+        assignment. Extension xxx in your answers.xxx file depends on the file format you use, which can be PDF, text,
+        Microsoft Word, or Open Office.
+
+
+    <li> Source code for the programming part. Including binaries is optional.
+
+    <li> A file called readme.txt,
+        which should specify precisely:
+
+        <ul>
+
+            <li>Name and UTA ID of the student.
+
+            <li>What programming language is used.</li>
+
+            <li>How to run the code, including very specific compilation instructions. Instructions such as "compile
+                using g++" are NOT considered specific. Providing all the command lines that are needed to complete the
+                compilation on omega is specific.
+            </li>
+
+        </ul>
+
+</ul>
+
+Insufficient or unclear instructions will be penalized by up to 20 points.
+Code that does not run on omega machines gets AT MOST half credit, unless you obtained prior written permission.
+
+</body>
+</html>
