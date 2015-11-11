@@ -3,15 +3,19 @@ package assignments.hw9
 object Assignment9 extends App {
 
   val a =
-    Node(1,
-      Node(2,
-        Node(4,
-          Node(6, Node(7, Empty, Empty), Empty),
-          Node(5, Empty, Empty)),
-        Empty),
-      Node(3, Empty, Empty)
-    )
+    Node("F",
+      Node("B",
+        Node("A", Empty, Empty),
+        Node("D",
+          Node("C", Empty, Empty),
+          Node("F", Empty, Empty))),
+      Node("G",
+        Empty,
+        Node("I",
+          Node("H", Empty, Empty),
+          Empty)))
 
+  println(a.levelOrder)
 
   //  a.map(println)
   println(a.depth)
@@ -21,4 +25,5 @@ object Assignment9 extends App {
 
   val c = Node(0, Empty, a)
   println(c)
+
 }
