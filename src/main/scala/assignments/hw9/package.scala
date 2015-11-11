@@ -2,7 +2,28 @@ package assignments
 
 package object hw9 {
 
-  def chooseAttr(examples: Seq[DataSet], testAttrs: Seq[Double]): (Double, Double) = ???
+  def chooseAttr(examples: Seq[DataSet], testAttrsIndex: Seq[Int]): (Double, Double) = {
+    var maxGain, bestAttr, bestThreshold = -1.0
+
+    for (index <- testAttrsIndex) {
+      val attrVals = examples.map(_.attrs(index))
+      val l = attrVals.min
+      val m = attrVals.max
+
+      for (k <- 1 to 50) {
+        val threshold = l + k * (m-l) / 51
+        val gain = informationGain(examples)(_.attrs(index) < threshold)
+
+        if (gain > maxGain) {
+          maxGain = gain
+          bestAttr = index
+          bestThreshold = threshold
+        }
+      }
+    }
+
+    (bestAttr, bestThreshold)
+  }
 
   def distribution(examples: Seq[DataSet]): Seq[Double] = ???
 
