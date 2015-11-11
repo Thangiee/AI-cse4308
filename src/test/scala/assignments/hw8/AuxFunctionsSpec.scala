@@ -30,7 +30,7 @@ class AuxFunctionsSpec extends BaseWordSpec {
     }
     "given two classes should be no greater than 1.0" in {
       val range = Gen.choose(0, 1000)
-      forAll((range ,"sizeA"), (range, "sizeB")) { (sizeA, sizeB) =>
+      forAll((range, "sizeA"), (range, "sizeB")) { (sizeA, sizeB) =>
         val data = List.fill(sizeA)(DataSet(A)) ++ List.fill(sizeB)(DataSet(B))
         entropy(data) should be <= 1.0
       }
@@ -60,11 +60,26 @@ class AuxFunctionsSpec extends BaseWordSpec {
       val Plus  = 100
       val pop =
         List.fill(13)(DataSet(label = Plus, attrs = 1)) ++
-          List.fill(4)(DataSet(label = Green, attrs = 1)) ++
-          List.fill(1)(DataSet(label = Plus, attrs = 2)) ++
-          List.fill(12)(DataSet(label = Green, attrs = 2))
+        List.fill(4)(DataSet(label = Green, attrs = 1)) ++
+        List.fill(1)(DataSet(label = Plus, attrs = 2)) ++
+        List.fill(12)(DataSet(label = Green, attrs = 2))
 
       informationGain(pop)(_.attrs.head == 1) shouldEqual (.38 +- .01)
+    }
+  }
+
+  "distribution" should {
+    "yield an collection, whose i - th position is the probability of the  i - th class" in {
+      val data =
+        List.fill(35)(DataSet(label = 0)) ++
+        List.fill(22)(DataSet(label = 1)) ++
+        List.fill(15)(DataSet(label = 2)) ++
+        List.fill(37)(DataSet(label = 3)) ++
+        List.fill(12)(DataSet(label = 4))
+
+      (distribution(data) zip Seq(0.2893, 0.1818, 0.1240, 0.3058, 0.0992)).foreach {
+        case (testVal, trueVal) => testVal shouldEqual trueVal
+      }
     }
   }
 }

@@ -25,7 +25,10 @@ package object hw9 {
     (bestAttr, bestThreshold)
   }
 
-  def distribution(examples: Seq[DataSet]): Seq[Double] = ???
+  def distribution(examples: Seq[DataSet]): Seq[Double] = {
+    val n = examples.size.toDouble
+    examples.groupBy(_.label).values.map(_.size / n).toSeq
+  }
 
   def entropy(data: Seq[DataSet]): Double = {
     def log2(x: Double): Double = if (x == 0) 0 else math.log(x) / math.log(2)
