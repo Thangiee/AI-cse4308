@@ -45,14 +45,14 @@ class BinTreeSpec extends BaseWordSpec {
       val tree =
         Node("F",
           Node("B",
-            Node("A", Empty, Empty),
+            Leaf("A"),
             Node("D",
-              Node("C", Empty, Empty),
-              Node("E", Empty, Empty))),
+              Leaf("C"),
+              Leaf("E"))),
           Node("G",
             Empty,
             Node("I",
-              Node("H", Empty, Empty),
+              Leaf("H"),
               Empty)))
 
       tree.levelOrder shouldEqual Seq("F", "B", "G", "A", "D", "I", "C", "E", "H")
