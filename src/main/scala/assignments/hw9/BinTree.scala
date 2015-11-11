@@ -18,6 +18,18 @@ object BinTree {
     }
 
     def map[B](f: A => B): BinTree[B] = tree.fold(Empty: BinTree[B])((x, l, r) => Node(f(x), l, r))
+
+    def levelOrder: Seq[A] = {
+      def go(queue: Seq[BinTree[A]]): Seq[A] = {
+        if (queue.isEmpty) Seq.empty
+        else queue.head match {
+          case Empty         => go(queue.tail)
+          case Node(x, l, r) => x +: go(queue.tail :+ l :+ r)
+        }
+      }
+
+      go(Seq(tree))
+    }
   }
 }
 

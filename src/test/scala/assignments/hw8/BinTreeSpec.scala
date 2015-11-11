@@ -39,6 +39,26 @@ class BinTreeSpec extends BaseWordSpec {
 
   }
 
+  it must {
+    "return the correct level-order" in {
+      // https://en.wikipedia.org/wiki/Tree_traversal#/media/File:Sorted_binary_tree_breadth-first_traversal.svg
+      val tree =
+        Node("F",
+          Node("B",
+            Node("A", Empty, Empty),
+            Node("D",
+              Node("C", Empty, Empty),
+              Node("E", Empty, Empty))),
+          Node("G",
+            Empty,
+            Node("I",
+              Node("H", Empty, Empty),
+              Empty)))
+
+      tree.levelOrder shouldEqual Seq("F", "B", "G", "A", "D", "I", "C", "E", "H")
+    }
+  }
+
   def nodeGen: Gen[Node[Int]] = for {
     value <- Gen.choose(-100, 100)
     left <- treeGen
