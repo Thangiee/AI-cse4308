@@ -2,7 +2,11 @@ package assignments
 
 package object hw9 {
 
-  def chooseAttr(examples: Seq[DataSet], testAttrsIndex: Seq[Int]): (Double, Double) = {
+  type Distribution = Map[Int, Double]
+
+  case class DataSet(label: Int, attrs: Seq[Double] = Seq.empty)
+
+  def chooseAttr(examples: Seq[DataSet], testAttrsIndex: Seq[Int]): (Int, Double) = {
     var maxGain, bestAttr, bestThreshold = -1.0
 
     for (index <- testAttrsIndex) {
@@ -22,12 +26,12 @@ package object hw9 {
       }
     }
 
-    (bestAttr, bestThreshold)
+    (bestAttr.toInt, bestThreshold)
   }
 
-  def distribution(examples: Seq[DataSet]): Seq[Double] = {
+  def distribution(examples: Seq[DataSet]): Distribution = {
     val n = examples.size.toDouble
-    examples.groupBy(_.label).values.map(_.size / n).toSeq
+    examples.groupBy(_.label).map{ case (label, ex) => (label, ex.size/n) }
   }
 
   def entropy(data: Seq[DataSet]): Double = {
@@ -41,7 +45,7 @@ package object hw9 {
     }
   }
 
-  def informationGain(data: Seq[DataSet])(threshold: DataSet => Boolean): Double = {
+  def informationGain(data:  Seq[DataSet])(threshold: DataSet => Boolean): Double = {
     val (p1, p2) = data.partition(threshold)
     val k = data.size.toDouble
 

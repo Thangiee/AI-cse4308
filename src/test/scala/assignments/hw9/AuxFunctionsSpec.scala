@@ -1,9 +1,10 @@
-package assignments.hw8
+package assignments.hw9
 
 import assignments.BaseWordSpec
-import assignments.hw9._
 import org.scalacheck.Gen
 import org.scalactic.TolerantNumerics
+
+import scala.util.Random
 
 class AuxFunctionsSpec extends BaseWordSpec {
 
@@ -59,17 +60,17 @@ class AuxFunctionsSpec extends BaseWordSpec {
       val Green = 200
       val Plus  = 100
       val pop =
-        List.fill(13)(DataSet(label = Plus, attrs = 1)) ++
-        List.fill(4)(DataSet(label = Green, attrs = 1)) ++
-        List.fill(1)(DataSet(label = Plus, attrs = 2)) ++
-        List.fill(12)(DataSet(label = Green, attrs = 2))
+        List.fill(13)(DataSet(label = Plus, attrs = Seq(1))) ++
+        List.fill(4)(DataSet(label = Green, attrs = Seq(1))) ++
+        List.fill(1)(DataSet(label = Plus, attrs = Seq(2))) ++
+        List.fill(12)(DataSet(label = Green, attrs = Seq(2)))
 
       informationGain(pop)(_.attrs.head == 1) shouldEqual (.38 +- .01)
     }
   }
 
   "distribution" should {
-    "yield an collection, whose i - th position is the probability of the  i - th class" in {
+    "yield an collection, whose i-th position is the probability of the  i-th class/label" in {
       val data =
         List.fill(35)(DataSet(label = 0)) ++
         List.fill(22)(DataSet(label = 1)) ++
@@ -77,9 +78,19 @@ class AuxFunctionsSpec extends BaseWordSpec {
         List.fill(37)(DataSet(label = 3)) ++
         List.fill(12)(DataSet(label = 4))
 
-      (distribution(data) zip Seq(0.2893, 0.1818, 0.1240, 0.3058, 0.0992)).foreach {
-        case (testVal, trueVal) => testVal shouldEqual trueVal
-      }
+      val res = distribution(data)
+      res(0) shouldEqual 0.2893
+      res(1) shouldEqual 0.1818
+      res(2) shouldEqual 0.1240
+      res(3) shouldEqual 0.3058
+      res(4) shouldEqual 0.0992
+
+      val res2 = distribution(Random.shuffle(data))
+      res2(0) shouldEqual 0.2893
+      res2(1) shouldEqual 0.1818
+      res2(2) shouldEqual 0.1240
+      res2(3) shouldEqual 0.3058
+      res2(4) shouldEqual 0.0992
     }
   }
 }

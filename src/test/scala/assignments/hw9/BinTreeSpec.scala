@@ -1,7 +1,6 @@
-package assignments.hw8
+package assignments.hw9
 
 import assignments.BaseWordSpec
-import assignments.hw9._
 import org.scalacheck.Gen
 
 class BinTreeSpec extends BaseWordSpec {
