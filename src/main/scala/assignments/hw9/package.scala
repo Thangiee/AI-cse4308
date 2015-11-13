@@ -1,15 +1,26 @@
 package assignments
 
+import scala.util.Random
+
 package object hw9 {
 
   type Distribution = Map[Int, Double]
 
+  sealed trait Strategy
+  case object Optimized extends Strategy
+  case object Randomized extends Strategy
+
   case class DataSet(label: Int, attrs: Seq[Double] = Seq.empty)
 
-  def chooseAttr(examples: Seq[DataSet], testAttrsIndex: Seq[Int]): (Int, Double) = {
+  def chooseAttr(examples: Seq[DataSet], testAttrsIndices: Seq[Int], strategy: Strategy): (Int, Double, Double) = {
     var maxGain, bestAttr, bestThreshold = -1.0
 
-    for (index <- testAttrsIndex) {
+    val indices = strategy match {
+      case Optimized  => testAttrsIndices
+      case Randomized => Seq(Random.shuffle(testAttrsIndices).head)
+    }
+
+    for (index <- indices) {
       val attrVals = examples.map(_.attrs(index))
       val l = attrVals.min
       val m = attrVals.max
@@ -26,7 +37,7 @@ package object hw9 {
       }
     }
 
-    (bestAttr.toInt, bestThreshold)
+    (bestAttr.toInt, bestThreshold, maxGain)
   }
 
   def distribution(examples: Seq[DataSet]): Distribution = {
