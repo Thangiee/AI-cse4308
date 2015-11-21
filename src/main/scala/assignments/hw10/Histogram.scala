@@ -5,11 +5,11 @@ import assignments.hw9.DataSet
 import scala.util.Try
 
 case class Histogram(label: Int, attr: Int, numOfBins: Int, trainingData: Seq[DataSet]) {
-  private val attrVals = trainingData.filter(_.label == this.label).map(_.attrs(attr))
   private val N = numOfBins
-  private val S = attrVals.min
-  private val L = attrVals.max
+  private val S = trainingData.map(_.attrs(attr)).min
+  private val L = trainingData.map(_.attrs(attr)).max
   private val G = (L-S) / N
+  private val attrVals = trainingData.filter(_.label == this.label).map(_.attrs(attr))
 
   private val bins = (0 until N).map {
     case 0 => attrVals.filter(value => Double.NegativeInfinity < value && value <= S+G)
@@ -21,6 +21,16 @@ case class Histogram(label: Int, attr: Int, numOfBins: Int, trainingData: Seq[Da
   def binFrq(binNum: Int): Int = Try(bins(binNum).size).getOrElse(0)
 
   def binPr(binNum: Int): Double = Try(probabilities(binNum)).getOrElse(0.0)
+
+  def Pr(x: Double): Double = {
+    def go(n: Int): Double = {
+      if      (Double.NegativeInfinity < x && x <= S+G) probabilities(0)
+      else if (S+n*G < x && x <= S+(n+1)*G) probabilities(n)
+      else if (n > N) probabilities(N-1)
+      else go(n+1)
+    }
+    go(0)
+  }
 
   override def toString: String =
     bins.indices.map(i => f"Class $label, attribute $attr, bin $i, P(bin | class) = ${binPr(i)}%.2f").mkString("\n")

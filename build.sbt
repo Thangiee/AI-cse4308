@@ -4,8 +4,8 @@ scalaVersion := "2.11.7"
 scalacOptions += "-Xexperimental"
 logLevel := Level.Error
 
-mainClass in assembly := Some("assignments.hw9.Assignment9")
-assemblyOutputPath in assembly := new File("./dtree.jar")
+mainClass in assembly := Some("assignments.hw10.Assignment10")
+assemblyOutputPath in assembly := new File("./naive_bayes.jar")
 
 libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.1.3",
